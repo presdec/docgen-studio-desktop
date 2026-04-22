@@ -19,7 +19,7 @@ export default defineConfig({
     build: {
       lib: {
         entry: resolve(__dirname, 'electron/preload.ts'),
-        fileName: () => 'preload.js',
+        fileName: () => 'preload.cjs',
       },
       rollupOptions: {
         output: {
@@ -32,6 +32,7 @@ export default defineConfig({
   renderer: {
     root: resolve(__dirname, '.'),
     build: {
+      outDir: 'dist-electron/renderer',
       rollupOptions: {
         input: resolve(__dirname, 'index.html'),
       },
