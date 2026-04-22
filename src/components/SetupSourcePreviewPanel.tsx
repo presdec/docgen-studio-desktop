@@ -23,7 +23,7 @@ export function SetupSourcePreviewPanel({
           <div>
             <Title order={3}>Load Check</Title>
             <Text c="dimmed" size="sm">
-              Confirm the contract fields and the first few Excel values before you continue.
+              Confirm detected Word fields and sample Excel values before moving to mapping.
             </Text>
           </div>
           <Badge color="cyan" variant="light">
@@ -41,7 +41,7 @@ export function SetupSourcePreviewPanel({
           <Paper className="mini-stat" p="md" radius="lg">
             <Stack gap="sm">
               <Text c="dimmed" size="sm">
-                Fields found in DOCX
+                Fields found in Word template
               </Text>
               <Group gap="xs">
                 {contractVariables.slice(0, 10).map((token) => (
@@ -51,7 +51,7 @@ export function SetupSourcePreviewPanel({
                 ))}
                 {!contractVariables.length ? (
                   <Text size="sm">
-                    No contract placeholders were found. Add markers like{' '}
+                    No template placeholders were found. Add markers like{' '}
                     <code>{'{{AUTHOR}}'}</code> or <code>{'{{TITLE}}'}</code> inside the
                     DOCX anywhere you want Excel values to be injected. Then save the file and
                     either browse for the contract template again in Project Setup or re-open the
@@ -65,10 +65,10 @@ export function SetupSourcePreviewPanel({
           <Paper className="mini-stat" p="md" radius="lg">
             <Stack gap="xs">
               <Text c="dimmed" size="sm">
-                Workbook sanity check
+                Workbook quick check
               </Text>
               <Text size="sm">
-                Showing the first {sampleRows.length} data rows with the first few headers so you can confirm the right sheet and row settings.
+                Showing the first {sampleRows.length} data rows so you can verify sheet and row settings before generating at scale.
               </Text>
             </Stack>
           </Paper>
@@ -99,7 +99,7 @@ export function SetupSourcePreviewPanel({
 
         {isLoading ? (
           <Text c="dimmed" size="sm">
-            Refreshing setup preview...
+            Refreshing source preview...
           </Text>
         ) : null}
       </Stack>

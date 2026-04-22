@@ -7,10 +7,17 @@ export type FileDialogRequest = {
   title: string;
 };
 
+export type StarterTemplateKind = 'email' | 'excel' | 'word';
+
+export type SaveStarterTemplateRequest = {
+  kind: StarterTemplateKind;
+};
+
 export type ProjectConfig = {
   workbookPath: string;
   contractTemplatePath: string;
   emailTemplatePath: string;
+  useOptionalEmailSource: boolean;
   outputFolderPath: string;
   worksheetName: string;
   headerRow: number;
@@ -19,11 +26,12 @@ export type ProjectConfig = {
 
 export type ProjectOpenResult = {
   filePath: string;
-  project: ProjectConfig;
+  projectDocument: SavedProjectDocument;
 };
 
 export type GenerationOptionsInput = {
   generateDocx: boolean;
+  generateEmailDrafts: boolean;
   generatePdf: boolean;
 };
 
@@ -34,6 +42,16 @@ export type EmailTemplateInput = {
   to: string;
 };
 
+export type SavedProjectDocument = {
+  activeStep?: number;
+  emailTemplate: EmailTemplateInput;
+  generationOptions: GenerationOptionsInput;
+  project: ProjectConfig;
+  tokenMappings: Record<string, string>;
+  variableColumns: Record<string, string>;
+  version: number;
+};
+
 export type GenerateProjectRequest = {
   emailTemplate: EmailTemplateInput;
   generationOptions: GenerationOptionsInput;
@@ -42,9 +60,16 @@ export type GenerateProjectRequest = {
   variableColumns: Record<string, string>;
 };
 
+export type OutputTreeEntry = {
+  absolutePath: string;
+  kind: 'directory' | 'file';
+  relativePath: string;
+};
+
 export type GenerateProjectResult = {
-  combinedEmailPath: string;
+  combinedEmailPath: string | null;
   contractsDir: string;
+  createdEntries: OutputTreeEntry[];
   generatedCount: number;
   outputDir: string;
   pdfDir: string;
@@ -55,12 +80,27 @@ export type GenerateProjectResult = {
   warnings: string[];
 };
 
+export type OpenPathRequest = {
+  targetPath: string;
+};
+
 export type InspectProjectRequest = {
   contractTemplatePath?: string;
   dataStartRow: number;
   headerRow: number;
   workbookPath: string;
   worksheetName: string;
+};
+
+export type TemplateStatusRequest = {
+  templatePath?: string;
+};
+
+export type TemplateStatusResult = {
+  exists: boolean;
+  isLocked: boolean;
+  lastModifiedMs: number | null;
+  templatePath: string;
 };
 
 export type WorkbookPreviewColumn = {

@@ -30,9 +30,9 @@ export function EmailTemplateEditor({
       <Stack gap="lg">
         <Group justify="space-between">
           <div>
-            <Title order={3}>Field Selector</Title>
+            <Title order={3}>Email Template Builder</Title>
             <Text c="dimmed" size="sm">
-              Click a variable to insert it where your cursor is active.
+              Click any field token to insert it where your cursor is active.
             </Text>
           </div>
           <Badge color="orange" variant="light">
@@ -51,7 +51,7 @@ export function EmailTemplateEditor({
         <Divider />
 
         <Stack gap="md">
-          <TextInput description="Click in this field, then insert a variable above." label="Subject" onChange={(event) => updateEmailField('subject', event.currentTarget.value)} onFocus={() => setActiveEditor('subject')} ref={editorRefs.subject} value={emailTemplate.subject} />
+          <TextInput description="Click here, then insert workbook fields from above." label="Subject" onChange={(event) => updateEmailField('subject', event.currentTarget.value)} onFocus={() => setActiveEditor('subject')} ref={editorRefs.subject} value={emailTemplate.subject} />
           <SimpleGrid cols={{ base: 1, md: 2 }}>
             <TextInput description="Primary recipient field." label="To" onChange={(event) => updateEmailField('to', event.currentTarget.value)} onFocus={() => setActiveEditor('to')} ref={editorRefs.to} value={emailTemplate.to} />
             <TextInput description="Optional copied recipients." label="Cc" onChange={(event) => updateEmailField('cc', event.currentTarget.value)} onFocus={() => setActiveEditor('cc')} ref={editorRefs.cc} value={emailTemplate.cc} />

@@ -1,0 +1,11 @@
+Subject: GreekLit | {{APPLICATION_CODE}} | {{TITLE}}
+To: {{EMAIL_TO}}
+Cc: {{EMAIL_CC}}
+
+Dear {{PUBLISHER}},
+
+Please find attached the contract for {{TITLE}} by {{AUTHOR}}.
+The approved amount is {{AMOUNT}} EUR and the first installment is {{FIRST_INSTALLMENT}} EUR.
+
+Best regards,
+The GreekLit Team

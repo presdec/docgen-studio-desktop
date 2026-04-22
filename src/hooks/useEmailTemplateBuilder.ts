@@ -1,7 +1,8 @@
+import { useAtom } from 'jotai/react';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { initialEmailTemplate } from '../data/defaults';
 import { extractTokens } from '../lib/template';
-import type { EditorField, EmailTemplateState } from '../types/template';
+import { emailTemplateAtom } from '../state/workspace';
+import type { EditorField } from '../types/template';
 
 export function useEmailTemplateBuilder() {
   const subjectRef = useRef<HTMLInputElement>(null);
@@ -19,7 +20,7 @@ export function useEmailTemplateBuilder() {
   );
 
   const [activeEditor, setActiveEditor] = useState<EditorField>('body');
-  const [emailTemplate, setEmailTemplate] = useState<EmailTemplateState>(initialEmailTemplate);
+  const [emailTemplate, setEmailTemplate] = useAtom(emailTemplateAtom);
 
   const updateEmailField = useCallback((field: EditorField, value: string) => {
     setEmailTemplate((current) => {

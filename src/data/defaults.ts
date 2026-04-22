@@ -1,33 +1,34 @@
-import type { ProjectConfig } from '../../shared/desktop';
+import type { ProjectConfig, SavedProjectDocument } from '../../shared/desktop';
 import type { EmailTemplateState, GenerationOptions, WizardStep } from '../types/template';
 
 export const wizardSteps: WizardStep[] = [
   {
     id: 1,
     title: 'Project Setup',
-    description: 'Choose the workbook, contract template, and output path.',
+    description: 'Choose your workbook, Word template, and output folder.',
   },
   {
     id: 2,
-    title: 'Contract Mapping',
-    description: 'Map DOCX placeholders to workbook variables and choose output format.',
+    title: 'Field Mapping',
+    description: 'Map Word placeholders to workbook variables and choose output format.',
   },
   {
     id: 3,
     title: 'Email Builder',
-    description: 'Compose the email template with click-to-insert workbook fields.',
+    description: 'Compose an email template with click-to-insert workbook fields.',
   },
   {
     id: 4,
     title: 'Review And Generate',
-    description: 'Check the preview, warnings, and final generation summary.',
+    description: 'Check preview and mapping coverage, then generate outputs.',
   },
 ];
 
 export const initialProject: ProjectConfig = {
   workbookPath: 'input/GLF-GR-EN-8th (1).xlsx',
   contractTemplatePath: 'Files/FULL OLD.docx',
-  emailTemplatePath: 'Built in app',
+  emailTemplatePath: '',
+  useOptionalEmailSource: false,
   outputFolderPath: 'output/',
   worksheetName: '8TH PERIOD',
   headerRow: 2,
@@ -36,22 +37,22 @@ export const initialProject: ProjectConfig = {
 
 export const initialEmailTemplate: EmailTemplateState = {
   subject:
-    'GreekLit | 8th Period Full Grant | {{APPLICATION_CODE}} | {{TITLE}} | {{AUTHOR}}',
+    'Document Batch | {{APPLICATION_CODE}} | {{TITLE}} | {{AUTHOR}}',
   to: '{{EMAIL_TO}}',
   cc: '{{EMAIL_CC}}',
   body: `Dear {{PUBLISHER}},
 
-Please find attached a copy of your Contract.
+Please find your generated document attached.
 
-Please complete the required details directly in the attached editable PDF and return the signed Contract within one (1) week.
+Please review the details and reply if you need any corrections.
 
-Please reply directly to this email and keep the same subject line, including your application code and the grant period.
+For faster support, keep this subject line in your reply.
 
-Together with the signed Contract, please also send the official invoice for {{FIRST_INSTALLMENT}} EUR and the supporting bank document.
+Reference amount: {{FIRST_INSTALLMENT}} EUR.
 
 Best regards,
 
-The GreekLit Team`,
+Operations Team`,
 };
 
 export const canonicalVariables = [
@@ -69,5 +70,16 @@ export const canonicalVariables = [
 
 export const defaultGenerationOptions: GenerationOptions = {
   generateDocx: true,
+  generateEmailDrafts: true,
   generatePdf: true,
+};
+
+export const initialSavedProjectDocument: SavedProjectDocument = {
+  activeStep: 1,
+  emailTemplate: initialEmailTemplate,
+  generationOptions: defaultGenerationOptions,
+  project: initialProject,
+  tokenMappings: {},
+  variableColumns: {},
+  version: 1,
 };

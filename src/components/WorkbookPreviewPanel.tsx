@@ -21,9 +21,9 @@ export function WorkbookPreviewPanel({
       <Stack gap="lg">
         <Group justify="space-between">
           <div>
-            <Title order={3}>Workbook First Row Preview</Title>
+            <Title order={3}>Workbook Mapping Preview</Title>
             <Text c="dimmed" size="sm">
-              Review the header row, first data row, selected variable, and whether that variable is used by contract or email templates.
+              Review workbook columns, sample values, and field assignments used by Word and email templates.
             </Text>
           </div>
           <Badge color="cyan" variant="light">{rows.length} columns</Badge>
@@ -74,7 +74,7 @@ export function WorkbookPreviewPanel({
 
         {isLoading ? (
           <Text c="dimmed" size="sm">
-            Refreshing workbook preview...
+            Refreshing workbook mapping preview...
           </Text>
         ) : null}
       </Stack>

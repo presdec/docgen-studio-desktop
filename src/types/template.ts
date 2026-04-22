@@ -9,6 +9,7 @@ export type EmailTemplateState = {
 
 export type GenerationOptions = {
   generateDocx: boolean;
+  generateEmailDrafts: boolean;
   generatePdf: boolean;
 };
 

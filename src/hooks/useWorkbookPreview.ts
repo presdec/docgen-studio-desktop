@@ -1,7 +1,10 @@
+import { useAtom } from 'jotai/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { WorkbookPreviewSampleRow } from '../../shared/desktop';
+import type { TemplateStatusResult } from '../../shared/desktop';
 import { canonicalVariables } from '../data/defaults';
 import { usageForVariable } from '../lib/template';
+import { variableColumnsAtom } from '../state/workspace';
 import type { WorkbookPreviewRow } from '../types/template';
 import type { ProjectConfig } from '../../shared/desktop';
 
@@ -12,67 +15,104 @@ export function useWorkbookPreview(
 ) {
   const [contractTokenContexts, setContractTokenContexts] = useState<Record<string, string>>({});
   const [contractVariables, setContractVariables] = useState<string[]>([]);
-  const [fieldAssignments, setFieldAssignments] = useState<Record<string, string>>({});
+  const [fieldAssignments, setFieldAssignments] = useAtom(variableColumnsAtom);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [rawColumns, setRawColumns] = useState<
     Array<{ columnLetter: string; header: string; sampleValue: string; suggestedVariable: string | null }>
   >([]);
   const [sampleRows, setSampleRows] = useState<WorkbookPreviewSampleRow[]>([]);
+  const [templateStatus, setTemplateStatus] = useState<TemplateStatusResult | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
 
-  useEffect(() => {
-    let isActive = true;
+  const refreshPreview = useCallback(() => {
+    setRefreshTick((current) => current + 1);
+  }, []);
 
-    async function loadPreview() {
-      if (!project.workbookPath || !project.worksheetName) {
-        return;
-      }
-
-      setIsLoading(true);
-      setLoadError(null);
-
-      try {
-        const result = await desktopApp.inspectProject({
-          contractTemplatePath: project.contractTemplatePath,
-          dataStartRow: project.dataStartRow,
-          headerRow: project.headerRow,
-          workbookPath: project.workbookPath,
-          worksheetName: project.worksheetName,
-        });
-
-        if (!isActive) {
-          return;
-        }
-
-        setRawColumns(result.columns);
-        setContractTokenContexts(result.contractTokenContexts ?? {});
-        setContractVariables(result.contractTokens);
-        setSampleRows(result.sampleRows);
-      } catch (error) {
-        if (!isActive) {
-          return;
-        }
-        setLoadError(error instanceof Error ? error.message : 'Could not inspect workbook.');
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
+  const loadTemplateStatus = useCallback(async () => {
+    if (!project.contractTemplatePath) {
+      setTemplateStatus(null);
+      return;
     }
 
-    void loadPreview();
+    const result = await desktopApp.getTemplateStatus({
+      templatePath: project.contractTemplatePath,
+    });
+    setTemplateStatus(result);
+  }, [desktopApp, project.contractTemplatePath]);
 
-    return () => {
-      isActive = false;
-    };
+  const loadPreview = useCallback(async () => {
+    if (!project.workbookPath || !project.worksheetName) {
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const result = await desktopApp.inspectProject({
+        contractTemplatePath: project.contractTemplatePath,
+        dataStartRow: project.dataStartRow,
+        headerRow: project.headerRow,
+        workbookPath: project.workbookPath,
+        worksheetName: project.worksheetName,
+      });
+
+      setRawColumns(result.columns);
+      setContractTokenContexts(result.contractTokenContexts ?? {});
+      setContractVariables(result.contractTokens);
+      setSampleRows(result.sampleRows);
+      await loadTemplateStatus();
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Could not inspect workbook.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [
     desktopApp,
+    loadTemplateStatus,
     project.contractTemplatePath,
     project.dataStartRow,
     project.headerRow,
     project.workbookPath,
     project.worksheetName,
   ]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function run() {
+      try {
+        await loadPreview();
+      } catch {
+        if (!isActive) {
+          return;
+        }
+      }
+    }
+
+    void run();
+
+    return () => {
+      isActive = false;
+    };
+  }, [loadPreview, refreshTick]);
+
+  useEffect(() => {
+    if (!project.contractTemplatePath) {
+      return undefined;
+    }
+
+    void loadTemplateStatus();
+
+    const interval = window.setInterval(() => {
+      void loadTemplateStatus();
+    }, 3000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [loadTemplateStatus, project.contractTemplatePath]);
 
   const availableVariables = useMemo(
     () =>
@@ -113,7 +153,7 @@ export function useWorkbookPreview(
 
       return hasChanges ? nextAssignments : current;
     });
-  }, [rawColumns]);
+  }, [rawColumns, setFieldAssignments]);
 
   const rows: WorkbookPreviewRow[] = useMemo(
     () =>
@@ -169,9 +209,11 @@ export function useWorkbookPreview(
     contractVariables,
     isLoading,
     loadError,
+    refreshPreview,
     rows,
     sampleRows,
     sampleValues,
     setFieldAssignment,
+    templateStatus,
   };
 }

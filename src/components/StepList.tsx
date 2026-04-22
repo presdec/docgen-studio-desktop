@@ -4,12 +4,16 @@ import type { WizardStepId } from '../types/template';
 
 type Props = {
   activeStep: WizardStepId;
+  visibleSteps: WizardStepId[];
 };
 
-export function StepList({ activeStep }: Props) {
+export function StepList({ activeStep, visibleSteps }: Props) {
+  const visibleSet = new Set(visibleSteps);
+  const displayedSteps = wizardSteps.filter((step) => visibleSet.has(step.id as WizardStepId));
+
   return (
     <Stack gap="md">
-      {wizardSteps.map((step) => {
+      {displayedSteps.map((step) => {
         const isCurrent = step.id === activeStep;
         const isComplete = step.id < activeStep;
 

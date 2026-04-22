@@ -1,13 +1,18 @@
 import { useMemo, useState } from 'react';
-import { Alert, Badge, Button, Checkbox, Group, Modal, Paper, Select, Stack, Table, Text, Title } from '@mantine/core';
-import type { GenerationOptions, WorkbookPreviewRow } from '../types/template';
+import { Alert, Badge, Button, Group, Modal, Paper, Select, Stack, Table, Text, Title } from '@mantine/core';
+import type { TemplateStatusResult } from '../../shared/desktop';
+import type { WorkbookPreviewRow } from '../types/template';
 
 type Props = {
   availableVariables: string[];
-  generationOptions: GenerationOptions;
+  contractTemplatePath: string;
+  isOpeningTemplate?: boolean;
+  isReloadingTemplate?: boolean;
   mappedContractFields: number;
-  setGenerationOption: (key: keyof GenerationOptions, value: boolean) => void;
+  onOpenTemplate: () => void;
+  onReloadTemplate: () => void;
   setTokenMapping: (token: string, variable: string | null) => void;
+  templateStatus: TemplateStatusResult | null;
   tokenContexts: Record<string, string>;
   tokenMappings: Record<string, string>;
   tokens: string[];
@@ -16,10 +21,14 @@ type Props = {
 
 export function ContractMappingPanel({
   availableVariables,
-  generationOptions,
+  contractTemplatePath,
+  isOpeningTemplate = false,
+  isReloadingTemplate = false,
   mappedContractFields,
-  setGenerationOption,
+  onOpenTemplate,
+  onReloadTemplate,
   setTokenMapping,
+  templateStatus,
   tokenContexts,
   tokenMappings,
   tokens,
@@ -40,17 +49,35 @@ export function ContractMappingPanel({
       return null;
     }
 
-    const renderedParagraph = sampleValue
-      ? paragraph.replaceAll(`{{${previewToken}}}`, sampleValue)
-      : paragraph;
-
     return {
       paragraph,
-      renderedParagraph,
+      renderedParagraph: sampleValue
+        ? paragraph.replaceAll(`{{${previewToken}}}`, sampleValue)
+        : paragraph,
       sampleValue,
       token: previewToken,
     };
   }, [previewToken, tokenContexts, tokenMappings, variableSources]);
+
+  const templateStatusText = useMemo(() => {
+    if (!contractTemplatePath) {
+      return 'Choose a Word template in Project Setup before mapping fields.';
+    }
+
+    if (!templateStatus?.exists) {
+      return 'The selected Word template could not be found on disk.';
+    }
+
+    if (templateStatus.isLocked) {
+      return 'The template still looks open in Word. Save your changes, close Word, then reload fields.';
+    }
+
+    if (templateStatus.lastModifiedMs) {
+      return `Last saved change detected at ${new Date(templateStatus.lastModifiedMs).toLocaleTimeString()}. Reload fields after saving if you added or renamed placeholders.`;
+    }
+
+    return 'Open the Word template, save your edits, then reload fields to pull in new placeholders.';
+  }, [contractTemplatePath, templateStatus]);
 
   return (
     <Stack gap="xl">
@@ -59,7 +86,7 @@ export function ContractMappingPanel({
         onClose={() => setPreviewToken(null)}
         opened={Boolean(previewToken)}
         size="lg"
-        title="Contract paragraph preview"
+        title="Template paragraph preview"
       >
         <Stack gap="md">
           {previewContent ? (
@@ -67,7 +94,7 @@ export function ContractMappingPanel({
               <Text c="dimmed" size="sm">
                 Token <code>{`{{${previewContent.token}}}`}</code>
                 {previewContent.sampleValue
-                  ? ` with sample value \"${previewContent.sampleValue}\"`
+                  ? ` with sample value "${previewContent.sampleValue}"`
                   : ' (no mapped sample value yet)'}
               </Text>
               <Paper p="md" radius="md" withBorder>
@@ -85,7 +112,7 @@ export function ContractMappingPanel({
             </>
           ) : (
             <Alert color="yellow" title="No paragraph context found" variant="light">
-              This token was found in the DOCX, but the app could not extract a paragraph around it.
+              This token was found in the Word file, but the app could not extract a paragraph around it.
             </Alert>
           )}
         </Stack>
@@ -95,36 +122,59 @@ export function ContractMappingPanel({
         <Stack gap="lg">
           <Group justify="space-between">
             <div>
-              <Title order={3}>Contract Field Mapping</Title>
+              <Title order={3}>Word Field Mapping</Title>
               <Text c="dimmed" size="sm">
-                Connect each DOCX placeholder to a workbook-backed variable before generation.
+                Connect each Word placeholder to an Excel column so document generation stays accurate.
               </Text>
             </div>
-            <Badge color="grape" variant="light">
-              {mappedContractFields} / {tokens.length} mapped
-            </Badge>
+            <Group gap="sm">
+              <Badge color="grape" variant="light">
+                {mappedContractFields} / {tokens.length} mapped
+              </Badge>
+              <Button
+                disabled={!contractTemplatePath}
+                loading={isOpeningTemplate}
+                onClick={onOpenTemplate}
+                size="xs"
+                variant="default"
+              >
+                Open template
+              </Button>
+              <Button
+                disabled={!contractTemplatePath}
+                loading={isReloadingTemplate}
+                onClick={onReloadTemplate}
+                size="xs"
+                variant="light"
+              >
+                Reload fields
+              </Button>
+            </Group>
           </Group>
 
+          <Alert color={templateStatus?.isLocked ? 'yellow' : 'blue'} radius="lg" title="Template editing flow" variant="light">
+            {templateStatusText}
+          </Alert>
+
           {!tokens.length ? (
-            <Alert color="yellow" radius="lg" title="No contract placeholders found" variant="light">
-              The app can only map fields that already exist in the DOCX. Open the contract template,
+            <Alert color="yellow" radius="lg" title="No Word placeholders found" variant="light">
+              The app can only map fields that already exist in the template. Open the Word file,
               decide where values should be inserted, and add placeholders in double braces such as
-              <code>{'{{AUTHOR}}'}</code>, <code>{'{{TITLE}}'}</code>, or{' '}
-              <code>{'{{APPLICATION_CODE}}'}</code>. After saving the DOCX, reload the
-              project or go back to Project Setup and browse for the contract file again. If you picked
-              the wrong file, you can replace it there and re-check.
+              <code>{'{{AUTHOR}}'}</code>, <code>{'{{TITLE}}'}</code>, or <code>{'{{APPLICATION_CODE}}'}</code>.
+              After saving the template, reload fields here. If you picked the wrong file, you can replace it in Project Setup.
             </Alert>
           ) : null}
 
           <Alert color="teal" radius="lg" title="Need more placeholders?" variant="light">
-            You can return to Project Setup, open or replace the DOCX, add markers like
-            <code>{'{{AUTHOR}}'}</code>, save, and then re-open that file to refresh this mapping list.
+            Add markers like <code>{'{{AUTHOR}}'}</code>, <code>{'{{TITLE}}'}</code>, or <code>{'{{APPLICATION_CODE}}'}</code>
+            directly in the Word file wherever values should be injected. Save the template, close Word if needed,
+            then use Reload fields.
           </Alert>
 
           <Table highlightOnHover striped withColumnBorders>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>DOCX field</Table.Th>
+                <Table.Th>Word field</Table.Th>
                 <Table.Th>Workbook variable</Table.Th>
                 <Table.Th>Source column</Table.Th>
                 <Table.Th>Sample value</Table.Th>
@@ -148,8 +198,8 @@ export function ContractMappingPanel({
                         value={variable || null}
                       />
                     </Table.Td>
-                    <Table.Td>{source?.columnLetter ?? '—'}</Table.Td>
-                    <Table.Td>{source?.sampleValue || '—'}</Table.Td>
+                    <Table.Td>{source?.columnLetter ?? '-'}</Table.Td>
+                    <Table.Td>{source?.sampleValue || '-'}</Table.Td>
                     <Table.Td>
                       <Button
                         disabled={!tokenContexts[token]}
@@ -165,34 +215,6 @@ export function ContractMappingPanel({
               })}
             </Table.Tbody>
           </Table>
-        </Stack>
-      </Paper>
-
-      <Paper className="panel-card" p="lg" radius="lg">
-        <Stack gap="md">
-          <div>
-            <Title order={3}>Output Format</Title>
-            <Text c="dimmed" size="sm">
-              Choose whether the completed run creates DOCX files, PDFs, or both.
-            </Text>
-          </div>
-
-          <Group gap="xl">
-            <Checkbox
-              checked={generationOptions.generateDocx}
-              label="Generate DOCX"
-              onChange={(event) =>
-                setGenerationOption('generateDocx', event.currentTarget.checked)
-              }
-            />
-            <Checkbox
-              checked={generationOptions.generatePdf}
-              label="Generate PDF"
-              onChange={(event) =>
-                setGenerationOption('generatePdf', event.currentTarget.checked)
-              }
-            />
-          </Group>
         </Stack>
       </Paper>
     </Stack>

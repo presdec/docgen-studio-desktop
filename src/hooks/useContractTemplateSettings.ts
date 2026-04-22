@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { defaultGenerationOptions } from '../data/defaults';
+import { useAtom } from 'jotai/react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { GenerationOptions, WorkbookPreviewRow } from '../types/template';
+import { generationOptionsAtom, tokenMappingsAtom } from '../state/workspace';
 
 export function useContractTemplateSettings(
   contractVariables: string[],
   availableVariables: string[],
   rows: WorkbookPreviewRow[],
 ) {
-  const [generationOptions, setGenerationOptions] =
-    useState<GenerationOptions>(defaultGenerationOptions);
-  const [tokenMappings, setTokenMappings] = useState<Record<string, string>>({});
+  const [generationOptions, setGenerationOptions] = useAtom(generationOptionsAtom);
+  const [tokenMappings, setTokenMappings] = useAtom(tokenMappingsAtom);
 
   useEffect(() => {
     setTokenMappings((current) => {
@@ -52,9 +52,8 @@ export function useContractTemplateSettings(
       }
 
       const next = { ...current, [key]: value };
-      if (!next.generateDocx && !next.generatePdf) {
-        next.generateDocx = key === 'generatePdf';
-        next.generatePdf = key === 'generateDocx';
+      if (!next.generateDocx && !next.generatePdf && !next.generateEmailDrafts) {
+        next.generateEmailDrafts = true;
       }
       return next;
     }), []);

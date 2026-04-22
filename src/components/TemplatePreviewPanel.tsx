@@ -13,9 +13,9 @@ export function TemplatePreviewPanel({ emailTemplate, sampleValues }: Props) {
       <Stack gap="lg">
         <Group justify="space-between">
           <div>
-            <Title order={3}>First Row Preview</Title>
+            <Title order={3}>Sample Render Preview</Title>
             <Text c="dimmed" size="sm">
-              Rendered with the selected first data row based on your header and data start settings.
+              Rendered using your sample row so you can validate templates before bulk generation.
             </Text>
           </div>
           <Badge color="teal" variant="light">Live Render</Badge>
