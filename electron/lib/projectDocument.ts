@@ -5,6 +5,7 @@ const defaultProjectConfig = {
   dataStartRow: 1,
   emailTemplatePath: '',
   headerRow: 1,
+  outputFilenamePattern: '{{APPLICATION_CODE}} - {{TITLE}} - {{LANGUAGE}}',
   outputFolderPath: '',
   useOptionalEmailSource: false,
   workbookPath: '',

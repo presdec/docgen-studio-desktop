@@ -28,6 +28,7 @@ export const initialProject: ProjectConfig = {
   workbookPath: '',
   contractTemplatePath: '',
   emailTemplatePath: '',
+  outputFilenamePattern: '{{APPLICATION_CODE}} - {{TITLE}} - {{LANGUAGE}}',
   useOptionalEmailSource: false,
   outputFolderPath: '',
   worksheetName: '',

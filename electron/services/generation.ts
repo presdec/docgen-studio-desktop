@@ -379,7 +379,10 @@ async function buildGenerationContext(
       ? normalizeOptionalEmailTemplateHtml(await readFile(optionalEmailTemplatePath, 'utf8'))
       : ''
     : buildEmailTemplateHtml(request);
-  const filenameTokens = wantsDocumentOutput ? extractTemplateTokens(DEFAULT_FILENAME_PATTERN) : [];
+  const filenamePattern = wantsDocumentOutput
+    ? (request.project.outputFilenamePattern || '').trim() || DEFAULT_FILENAME_PATTERN
+    : DEFAULT_FILENAME_PATTERN;
+  const filenameTokens = wantsDocumentOutput ? extractTemplateTokens(filenamePattern) : [];
   const emailTokens = request.generationOptions.generateEmailDrafts
     ? extractTemplateTokens(emailTemplateText)
     : [];
@@ -447,7 +450,7 @@ async function buildGenerationContext(
     date_format: '%Y-%m-%d',
     email_output_subdir: 'emails',
     email_template_path: emailTemplatePath,
-    filename_pattern: DEFAULT_FILENAME_PATTERN,
+    filename_pattern: filenamePattern,
     header_row: request.project.headerRow,
     keep_docx_output: request.generationOptions.generateDocx,
     mapping_path: mappingPath,
@@ -672,7 +675,7 @@ export async function runProjectPreflight(
         'mappings',
         'Placeholder mappings',
         'fail',
-        'Map at least one Word or email placeholder before generation.',
+        'Map at least one Word, output filename, or email placeholder before generation.',
       );
     } else {
       addCheck(
@@ -695,7 +698,7 @@ export async function runProjectPreflight(
         'required-placeholders',
         'Required placeholder coverage',
         'pass',
-        'All required Word and email placeholders are mapped.',
+        'All required Word, output filename, and email placeholders are mapped.',
       );
     }
 

@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { Alert, Badge, Button, Group, Modal, Paper, Select, Stack, Table, Text, Title } from '@mantine/core';
+import { Alert, Badge, Button, Group, Modal, Paper, Select, Stack, Table, Text, TextInput, Title } from '@mantine/core';
 import type { TemplateStatusResult } from '../../shared/desktop';
 import type { WorkbookPreviewRow } from '../types/template';
 import { useI18n } from '../i18n';
@@ -12,7 +12,9 @@ type Props = {
   mappedContractFields: number;
   onOpenTemplate: () => void;
   onReloadTemplate: () => void;
+  outputFilenamePattern: string;
   setTokenMapping: (token: string, variable: string | null) => void;
+  setOutputFilenamePattern: (value: string) => void;
   templateStatus: TemplateStatusResult | null;
   tokenContexts: Record<string, string>;
   tokenMappings: Record<string, string>;
@@ -28,7 +30,9 @@ function ContractMappingPanelComponent({
   mappedContractFields,
   onOpenTemplate,
   onReloadTemplate,
+  outputFilenamePattern,
   setTokenMapping,
+  setOutputFilenamePattern,
   templateStatus,
   tokenContexts,
   tokenMappings,
@@ -159,6 +163,14 @@ function ContractMappingPanelComponent({
           <Alert color={templateStatus?.isLocked ? 'yellow' : 'blue'} radius="lg" title={copy.contractMapping.templateFlowTitle} variant="light">
             {templateStatusText}
           </Alert>
+
+          <TextInput
+            description={copy.projectSetup.outputFilenamePatternDesc}
+            label={copy.projectSetup.outputFilenamePatternLabel}
+            onChange={(event) => setOutputFilenamePattern(event.currentTarget.value)}
+            placeholder={copy.projectSetup.outputFilenamePatternPlaceholder}
+            value={outputFilenamePattern}
+          />
 
           {!tokens.length ? (
             <Alert color="yellow" radius="lg" title={copy.contractMapping.noPlaceholdersTitle} variant="light">

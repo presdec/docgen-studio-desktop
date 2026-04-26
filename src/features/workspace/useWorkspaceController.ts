@@ -8,6 +8,7 @@ import { useContractTemplateSettings } from '../../hooks/useContractTemplateSett
 import { useProjectSetup } from '../../hooks/useProjectSetup';
 import { useWorkbookPreview } from '../../hooks/useWorkbookPreview';
 import { useI18n } from '../../i18n';
+import { extractTokens, tokenName } from '../../lib/template';
 import type { WizardStepId } from '../../types/template';
 import type {
   GenerateProjectProgress,
@@ -62,10 +63,22 @@ export function useWorkspaceController(desktopApp: Window['desktopApp']) {
   const [isOpeningPath, setIsOpeningPath] = useState(false);
   const [isReloadingTemplate, setIsReloadingTemplate] = useState(false);
   const [templateActionError, setTemplateActionError] = useState<string | null>(null);
+  const filenameVariables = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          extractTokens(projectSetup.project.outputFilenamePattern)
+            .map(tokenName)
+            .filter((value) => value.trim().length > 0),
+        ),
+      ),
+    [projectSetup.project.outputFilenamePattern],
+  );
   const workbookPreview = useWorkbookPreview(
     desktopApp,
     projectSetup.project,
     templateBuilder.emailVariables,
+    filenameVariables,
   );
   const contractSettings = useContractTemplateSettings(
     workbookPreview.contractVariables,

@@ -12,6 +12,7 @@ export function useWorkbookPreview(
   desktopApp: Window['desktopApp'],
   project: ProjectConfig,
   emailVariables: string[],
+  filenameVariables: string[],
 ) {
   const [contractTokenContexts, setContractTokenContexts] = useState<Record<string, string>>({});
   const [contractVariables, setContractVariables] = useState<string[]>([]);
@@ -136,10 +137,16 @@ export function useWorkbookPreview(
           ...canonicalVariables,
           ...contractVariables,
           ...emailVariables,
+          ...filenameVariables,
           ...rawColumns.map((column) => column.suggestedVariable).filter(Boolean),
         ]),
       ) as string[],
-    [contractVariables, emailVariables, rawColumns],
+    [contractVariables, emailVariables, filenameVariables, rawColumns],
+  );
+
+  const contractAndFilenameVariables = useMemo(
+    () => Array.from(new Set([...contractVariables, ...filenameVariables])),
+    [contractVariables, filenameVariables],
   );
 
   useEffect(() => {
@@ -177,10 +184,10 @@ export function useWorkbookPreview(
         return {
           ...column,
           selectedVariable,
-          usedBy: usageForVariable(selectedVariable, emailVariables, contractVariables),
+          usedBy: usageForVariable(selectedVariable, emailVariables, contractAndFilenameVariables),
         };
       }),
-    [contractVariables, emailVariables, fieldAssignments, rawColumns],
+    [contractAndFilenameVariables, emailVariables, fieldAssignments, rawColumns],
   );
 
   const sampleValues = useMemo(

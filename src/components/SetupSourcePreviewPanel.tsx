@@ -5,16 +5,20 @@ import { useI18n } from '../i18n';
 
 type Props = {
   contractVariables: string[];
+  hasWordTemplate: boolean;
   isLoading: boolean;
   loadError: string | null;
   sampleRows: WorkbookPreviewSampleRow[];
+  showWordPreview: boolean;
 };
 
 function SetupSourcePreviewPanelComponent({
   contractVariables,
+  hasWordTemplate,
   isLoading,
   loadError,
   sampleRows,
+  showWordPreview,
 }: Props) {
   const { copy } = useI18n();
   const headers = useMemo(() => Object.keys(sampleRows[0]?.values ?? {}), [sampleRows]);
@@ -40,26 +44,30 @@ function SetupSourcePreviewPanelComponent({
           </Alert>
         ) : null}
 
-        <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
-          <Paper className="mini-stat" p="md" radius="lg">
-            <Stack gap="sm">
-              <Text c="dimmed" size="sm">
-                {copy.setupPreview.fieldsFoundInWord}
-              </Text>
-              <Group gap="xs">
-                {contractVariables.slice(0, 10).map((token) => (
-                  <Badge key={token} color="grape" variant="light">
-                    {token}
-                  </Badge>
-                ))}
-                {!contractVariables.length ? (
-                  <Text size="sm">
-                    {copy.setupPreview.noTemplateFields}
-                  </Text>
-                ) : null}
-              </Group>
-            </Stack>
-          </Paper>
+        <SimpleGrid cols={{ base: 1, lg: showWordPreview ? 2 : 1 }} spacing="lg">
+          {showWordPreview ? (
+            <Paper className="mini-stat" p="md" radius="lg">
+              <Stack gap="sm">
+                <Text c="dimmed" size="sm">
+                  {copy.setupPreview.fieldsFoundInWord}
+                </Text>
+                <Group gap="xs">
+                  {contractVariables.slice(0, 10).map((token) => (
+                    <Badge key={token} color="grape" variant="light">
+                      {token}
+                    </Badge>
+                  ))}
+                  {!contractVariables.length ? (
+                    <Text size="sm">
+                      {hasWordTemplate
+                        ? copy.setupPreview.noTemplateFields
+                        : copy.setupPreview.wordTemplateNotSelected}
+                    </Text>
+                  ) : null}
+                </Group>
+              </Stack>
+            </Paper>
+          ) : null}
 
           <Paper className="mini-stat" p="md" radius="lg">
             <Stack gap="xs">

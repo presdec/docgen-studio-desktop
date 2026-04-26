@@ -80,6 +80,9 @@ type Translation = {
     outputFolderDesc: string;
     outputFolderLabel: string;
     outputFolderPlaceholder: string;
+    outputFilenamePatternDesc: string;
+    outputFilenamePatternLabel: string;
+    outputFilenamePatternPlaceholder: string;
     pdfFiles: string;
     title: string;
     subtitle: string;
@@ -167,10 +170,12 @@ type Translation = {
   };
   review: {
     badge: string;
+    checksPassSummary: (passed: number, total: number) => string;
     emailBodyLength: string;
     fixIssue: string;
     goodToGenerateBody: string;
     goodToGenerateTitle: string;
+    hideDetails: string;
     issuesFound: (count: number) => string;
     mappedColumns: string;
     mappedWordFields: string;
@@ -183,6 +188,7 @@ type Translation = {
     rowsFound: string;
     selectedOutput: string;
     setupCheck: string;
+    showDetails: string;
     subtitle: string;
     statusFail: string;
     statusPass: string;
@@ -200,6 +206,7 @@ type Translation = {
     refreshing: string;
     row: string;
     subtitle: string;
+    wordTemplateNotSelected: string;
   };
   success: {
     createdFiles: string;
@@ -338,6 +345,10 @@ const translations: Record<Language, Translation> = {
         'Choose where generated DOCX, PDF, drafts, and reports should be written.',
       outputFolderLabel: 'Output Folder',
       outputFolderPlaceholder: 'Select output folder',
+      outputFilenamePatternDesc:
+        'Controls DOCX/PDF file names. Use placeholders like {{APPLICATION_ID}} or plain text to avoid extra required mappings.',
+      outputFilenamePatternLabel: 'Output Filename Pattern',
+      outputFilenamePatternPlaceholder: '{{APPLICATION_CODE}} - {{TITLE}}',
       pdfFiles: 'PDF files',
       title: 'Project Setup',
       subtitle:
@@ -423,19 +434,21 @@ const translations: Record<Language, Translation> = {
         'Review workbook columns, sample values, and field assignments used by Word and email templates.',
       title: 'Workbook Mapping Preview',
       usedBy: 'Used by',
-      usedByBoth: 'Word + Email',
-      usedByContract: 'Word',
+      usedByBoth: '[WORD Field] + Email',
+      usedByContract: '[WORD Field]',
       usedByEmail: 'Email',
       usedByNone: 'None',
       chooseVariable: 'Choose variable',
     },
     review: {
       badge: 'Review',
+      checksPassSummary: (passed, total) => `${passed}/${total} Checks Pass`,
       emailBodyLength: 'Email body length',
       fixIssue: 'Fix',
       goodToGenerateBody:
         'Files, mappings, output folder, and selected generation options passed preflight.',
       goodToGenerateTitle: 'Good to generate',
+      hideDetails: 'Hide details',
       issuesFound: (count) => `${count} issue${count === 1 ? '' : 's'} need attention`,
       mappedColumns: 'Mapped workbook columns',
       mappedWordFields: 'Mapped Word fields',
@@ -449,6 +462,7 @@ const translations: Record<Language, Translation> = {
       rowsFound: 'Rows found',
       selectedOutput: 'Selected output',
       setupCheck: 'Setup Check',
+      showDetails: 'Show details',
       subtitle: 'Final review of template coverage, mapped fields, and output settings before generation.',
       statusFail: 'FAIL',
       statusPass: 'PASS',
@@ -468,6 +482,7 @@ const translations: Record<Language, Translation> = {
       refreshing: 'Refreshing source preview...',
       row: 'Row',
       subtitle: 'Confirm detected Word fields and sample Excel values before moving to mapping.',
+      wordTemplateNotSelected: 'Select a Word template to preview placeholders. Excel load checks are already active.',
     },
     success: {
       createdFiles: 'Created files',
@@ -605,6 +620,10 @@ const translations: Record<Language, Translation> = {
         'Επιλέξτε πού θα γράφονται τα παραγόμενα DOCX, PDF, προσχέδια και αναφορές.',
       outputFolderLabel: 'Φάκελος Εξόδου',
       outputFolderPlaceholder: 'Επιλέξτε φάκελο εξόδου',
+      outputFilenamePatternDesc:
+        'Ορίζει το όνομα αρχείου για DOCX/PDF. Χρησιμοποιήστε placeholders όπως {{APPLICATION_ID}} ή απλό κείμενο για λιγότερες υποχρεωτικές αντιστοιχίσεις.',
+      outputFilenamePatternLabel: 'Μοτίβο Ονόματος Αρχείου Εξόδου',
+      outputFilenamePatternPlaceholder: '{{APPLICATION_CODE}} - {{TITLE}}',
       pdfFiles: 'Αρχεία PDF',
       title: 'Ρύθμιση Έργου',
       subtitle:
@@ -690,19 +709,21 @@ const translations: Record<Language, Translation> = {
         'Ελέγξτε στήλες workbook, τιμές δείγματος και αντιστοιχίσεις πεδίων για Word και email.',
       title: 'Προεπισκόπηση Αντιστοίχισης Workbook',
       usedBy: 'Χρησιμοποιείται από',
-      usedByBoth: 'Word + Email',
-      usedByContract: 'Word',
+      usedByBoth: '[WORD Field] + Email',
+      usedByContract: '[WORD Field]',
       usedByEmail: 'Email',
       usedByNone: 'Κανένα',
       chooseVariable: 'Επιλέξτε μεταβλητή',
     },
     review: {
       badge: 'Έλεγχος',
+      checksPassSummary: (passed, total) => `${passed}/${total} Έλεγχοι OK`,
       emailBodyLength: 'Μήκος κειμένου email',
       fixIssue: 'Διόρθωση',
       goodToGenerateBody:
         'Τα αρχεία, οι αντιστοιχίσεις, ο φάκελος εξόδου και οι επιλογές δημιουργίας πέρασαν τον προέλεγχο.',
       goodToGenerateTitle: 'Έτοιμο για δημιουργία',
+      hideDetails: 'Απόκρυψη λεπτομερειών',
       issuesFound: (count) => `${count} θέματα χρειάζονται έλεγχο`,
       mappedColumns: 'Αντιστοιχισμένες στήλες workbook',
       mappedWordFields: 'Αντιστοιχισμένα πεδία Word',
@@ -716,6 +737,7 @@ const translations: Record<Language, Translation> = {
       rowsFound: 'Γραμμές που βρέθηκαν',
       selectedOutput: 'Επιλεγμένη έξοδος',
       setupCheck: 'Έλεγχος Ρύθμισης',
+      showDetails: 'Προβολή λεπτομερειών',
       subtitle: 'Τελικός έλεγχος κάλυψης προτύπων, αντιστοιχίσεων και ρυθμίσεων εξόδου πριν τη δημιουργία.',
       statusFail: 'ΑΠΟΤΥΧΙΑ',
       statusPass: 'OK',
@@ -735,6 +757,7 @@ const translations: Record<Language, Translation> = {
       refreshing: 'Ανανέωση προεπισκόπησης πηγών...',
       row: 'Γραμμή',
       subtitle: 'Επιβεβαιώστε τα πεδία Word και δείγματα τιμών Excel πριν την αντιστοίχιση.',
+      wordTemplateNotSelected: 'Επιλέξτε πρότυπο Word για προεπισκόπηση placeholders. Ο έλεγχος φόρτωσης Excel εκτελείται ήδη.',
     },
     success: {
       createdFiles: 'Δημιουργημένα αρχεία',

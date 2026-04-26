@@ -1,4 +1,5 @@
-import { Alert, Badge, Button, Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { useState } from 'react';
+import { Alert, Badge, Button, Collapse, Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import type { ProjectPreflightCheck } from '../../shared/desktop';
 import type { ProjectPreflightResult } from '../../shared/desktop';
 import type { EmailTemplateState, GenerationOptions, WorkbookPreviewRow } from '../types/template';
@@ -99,11 +100,11 @@ function localizePreflightCheck(check: ProjectPreflightCheck, language: 'en' | '
     },
     'mappings': {
       label: 'Αντιστοιχίσεις placeholders',
-      detail: 'Απαιτείται τουλάχιστον μία αντιστοίχιση Word ή email placeholder.',
+      detail: 'Απαιτείται τουλάχιστον μία αντιστοίχιση Word, ονόματος εξόδου ή email placeholder.',
     },
     'required-placeholders': {
       label: 'Κάλυψη απαιτούμενων placeholders',
-      detail: 'Όλα τα απαιτούμενα placeholders Word και email πρέπει να είναι αντιστοιχισμένα.',
+      detail: 'Όλα τα απαιτούμενα placeholders Word, ονόματος εξόδου και email πρέπει να είναι αντιστοιχισμένα.',
     },
     'pdf-backend': {
       label: 'Δυνατότητα PDF',
@@ -139,6 +140,7 @@ export function ReviewSummaryPanel({
   onGoToStep,
 }: Props) {
   const { copy, language } = useI18n();
+  const [showSetupCheckDetails, setShowSetupCheckDetails] = useState(false);
   const mappedRows = rows.filter((row) => row.selectedVariable);
   const outputLabel = [
     generationOptions.generateDocx ? copy.outputLabels.word : null,
@@ -147,6 +149,8 @@ export function ReviewSummaryPanel({
   ].filter(Boolean).join(' + ');
   const failedChecks = preflight?.checks.filter((check) => check.status === 'fail') ?? [];
   const warningChecks = preflight?.checks.filter((check) => check.status === 'warn') ?? [];
+  const passedChecks = preflight?.checks.filter((check) => check.status === 'pass') ?? [];
+  const totalChecks = preflight?.checks.length ?? 0;
   const issueCount = failedChecks.length + warningChecks.length;
   const readyToGenerate = Boolean(preflight?.canGenerate);
 
@@ -222,65 +226,84 @@ export function ReviewSummaryPanel({
 
         {preflight ? (
           <Stack gap="sm">
-            <Title order={4}>{copy.review.setupCheck}</Title>
-            {preflight.checks.map((check) => {
-              const localizedCheck = localizePreflightCheck(check, language);
-              const targetStep = stepForCheck(check.id, generationOptions);
+            <Group justify="space-between" wrap="nowrap">
+              <Title order={4}>{copy.review.setupCheck}</Title>
+              <Group gap="xs" wrap="nowrap">
+                <Badge color={readyToGenerate ? 'teal' : issueCount > 0 ? 'red' : 'gray'} variant="light">
+                  {copy.review.checksPassSummary(passedChecks.length, totalChecks)}
+                </Badge>
+                <Button
+                  onClick={() => setShowSetupCheckDetails((current) => !current)}
+                  size="compact-sm"
+                  variant="subtle"
+                >
+                  {showSetupCheckDetails ? copy.review.hideDetails : copy.review.showDetails}
+                </Button>
+              </Group>
+            </Group>
 
-              return (
-                <Paper key={check.id} p="sm" radius="md" withBorder>
-                  <Group justify="space-between" wrap="nowrap">
-                    <Group align="flex-start" wrap="nowrap">
-                      <ThemeIcon
-                        color={
-                          localizedCheck.status === 'pass'
-                            ? 'teal'
-                            : localizedCheck.status === 'warn'
-                              ? 'yellow'
-                              : 'red'
-                        }
-                        radius="xl"
-                        size="sm"
-                        variant="light"
-                      >
-                        {localizedCheck.status === 'pass' ? 'OK' : '!'}
-                      </ThemeIcon>
-                      <div>
-                        <Text fw={600} size="sm">{localizedCheck.label}</Text>
-                        <Text c="dimmed" size="sm">{localizedCheck.detail}</Text>
-                      </div>
-                    </Group>
-                    <Group gap="xs" wrap="nowrap">
-                      <Badge
-                        color={
-                          localizedCheck.status === 'pass'
-                            ? 'teal'
-                            : localizedCheck.status === 'warn'
-                              ? 'yellow'
-                              : 'red'
-                        }
-                        variant="light"
-                      >
-                        {localizedCheck.status === 'pass'
-                          ? copy.review.statusPass
-                          : localizedCheck.status === 'warn'
-                            ? copy.review.statusWarn
-                            : copy.review.statusFail}
-                      </Badge>
-                      {localizedCheck.status !== 'pass' && targetStep ? (
-                        <Button
-                          onClick={() => onGoToStep(targetStep)}
-                          size="compact-xs"
-                          variant="subtle"
-                        >
-                          {copy.review.fixIssue}
-                        </Button>
-                      ) : null}
-                    </Group>
-                  </Group>
-                </Paper>
-              );
-            })}
+            <Collapse in={showSetupCheckDetails}>
+              <Stack gap="sm">
+                {preflight.checks.map((check) => {
+                  const localizedCheck = localizePreflightCheck(check, language);
+                  const targetStep = stepForCheck(check.id, generationOptions);
+
+                  return (
+                    <Paper key={check.id} p="sm" radius="md" withBorder>
+                      <Group justify="space-between" wrap="nowrap">
+                        <Group align="flex-start" wrap="nowrap">
+                          <ThemeIcon
+                            color={
+                              localizedCheck.status === 'pass'
+                                ? 'teal'
+                                : localizedCheck.status === 'warn'
+                                  ? 'yellow'
+                                  : 'red'
+                            }
+                            radius="xl"
+                            size="sm"
+                            variant="light"
+                          >
+                            {localizedCheck.status === 'pass' ? 'OK' : '!'}
+                          </ThemeIcon>
+                          <div>
+                            <Text fw={600} size="sm">{localizedCheck.label}</Text>
+                            <Text c="dimmed" size="sm">{localizedCheck.detail}</Text>
+                          </div>
+                        </Group>
+                        <Group gap="xs" wrap="nowrap">
+                          <Badge
+                            color={
+                              localizedCheck.status === 'pass'
+                                ? 'teal'
+                                : localizedCheck.status === 'warn'
+                                  ? 'yellow'
+                                  : 'red'
+                            }
+                            variant="light"
+                          >
+                            {localizedCheck.status === 'pass'
+                              ? copy.review.statusPass
+                              : localizedCheck.status === 'warn'
+                                ? copy.review.statusWarn
+                                : copy.review.statusFail}
+                          </Badge>
+                          {localizedCheck.status !== 'pass' && targetStep ? (
+                            <Button
+                              onClick={() => onGoToStep(targetStep)}
+                              size="compact-xs"
+                              variant="subtle"
+                            >
+                              {copy.review.fixIssue}
+                            </Button>
+                          ) : null}
+                        </Group>
+                      </Group>
+                    </Paper>
+                  );
+                })}
+              </Stack>
+            </Collapse>
           </Stack>
         ) : null}
       </Stack>

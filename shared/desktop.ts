@@ -17,6 +17,7 @@ export type ProjectConfig = {
   workbookPath: string;
   contractTemplatePath: string;
   emailTemplatePath: string;
+  outputFilenamePattern: string;
   useOptionalEmailSource: boolean;
   outputFolderPath: string;
   worksheetName: string;

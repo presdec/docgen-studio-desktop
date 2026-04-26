@@ -169,9 +169,11 @@ export function App() {
                 />
                 <SetupSourcePreviewPanel
                   contractVariables={controller.workbookPreview.contractVariables}
+                  hasWordTemplate={Boolean(controller.projectSetup.project.contractTemplatePath)}
                   isLoading={controller.workbookPreview.isLoading}
                   loadError={controller.workbookPreview.loadError}
                   sampleRows={controller.workbookPreview.sampleRows}
+                  showWordPreview={controller.contractSettings.generationOptions.generateDocx || controller.contractSettings.generationOptions.generatePdf}
                 />
               </Stack>
             ) : null}
@@ -187,7 +189,13 @@ export function App() {
                 mappedContractFields={controller.contractSettings.mappedContractFields}
                 onOpenTemplate={() => void controller.handleOpenContractTemplate()}
                 onReloadTemplate={() => void controller.handleReloadTemplateFields()}
+                outputFilenamePattern={controller.projectSetup.project.outputFilenamePattern}
                 setTokenMapping={controller.contractSettings.setTokenMapping}
+                setOutputFilenamePattern={(value) =>
+                  controller.projectSetup.setProject((current) => ({
+                    ...current,
+                    outputFilenamePattern: value,
+                  }))}
                 templateStatus={controller.workbookPreview.templateStatus}
                 tokenContexts={controller.workbookPreview.contractTokenContexts}
                 tokenMappings={controller.contractSettings.tokenMappings}
