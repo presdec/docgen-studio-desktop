@@ -193,7 +193,11 @@ def extract_contract_tokens(path_value):
 
 def inspect_workbook(payload):
     workbook = load_workbook(payload["workbook_path"], data_only=True, read_only=True)
-    worksheet = workbook[payload["worksheet_name"]]
+    worksheet_name = (payload.get("worksheet_name") or "").strip()
+    if worksheet_name and worksheet_name in workbook.sheetnames:
+        worksheet = workbook[worksheet_name]
+    else:
+        worksheet = workbook[workbook.sheetnames[0]]
     header_row = int(payload["header_row"])
     data_start_row = int(payload["data_start_row"])
 
@@ -241,7 +245,7 @@ def inspect_workbook(payload):
         "headerRow": header_row,
         "sampleRows": sample_rows,
         "totalRows": max(0, worksheet.max_row - data_start_row + 1),
-        "worksheetName": payload["worksheet_name"],
+        "worksheetName": worksheet.title,
     }
 
 
@@ -252,6 +256,6 @@ if __name__ == "__main__":
         "data_start_row": raw_payload["dataStartRow"],
         "header_row": raw_payload["headerRow"],
         "workbook_path": raw_payload["workbookPath"],
-        "worksheet_name": raw_payload["worksheetName"],
+        "worksheet_name": raw_payload.get("worksheetName"),
     }
     print(json.dumps(inspect_workbook(payload)))
