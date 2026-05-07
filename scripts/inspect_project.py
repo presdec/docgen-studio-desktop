@@ -24,6 +24,41 @@ def normalize_cell_value(value):
     return str(value).strip()
 
 
+HEADER_VARIABLE_ALIASES = [
+    ("APPLICATION_CODE", ["#", "application code", "application", "code"]),
+    ("EMAIL_TO", ["email to", "to", "email"]),
+    ("EMAIL_CC", ["cc"]),
+    ("AUTHOR", ["author"]),
+    ("PUBLISHER", ["publisher"]),
+    ("AMOUNT", ["amount"]),
+    ("FIRST_INSTALLMENT", ["first installment", "installment"]),
+    ("LANGUAGE", ["language"]),
+    ("TITLE", ["title"]),
+]
+
+
+def normalize_header_to_variable(header):
+    header_value = normalize_cell_value(header)
+    if not header_value:
+        return None
+
+    normalized = re.sub(r"\s+", " ", header_value).strip().lower()
+
+    for variable, aliases in HEADER_VARIABLE_ALIASES:
+        if normalized in aliases:
+            return variable
+
+    # Preserve historical fuzzy behavior where broad aliases (for example
+    # "email") can match before more specific buckets like EMAIL_CC.
+    for variable, aliases in HEADER_VARIABLE_ALIASES:
+        for alias in aliases:
+            if alias and alias in normalized:
+                return variable
+
+    fallback = re.sub(r"[^A-Za-z0-9]+", "_", header_value).strip("_").upper()
+    return fallback or None
+
+
 
 def get_column_letter(index):
     letters = []
@@ -126,6 +161,7 @@ def inspect_workbook(request_payload):
                 "columnLetter": get_column_letter(cell.column),
                 "header": header,
                 "sampleValue": sample_value,
+                "suggestedVariable": normalize_header_to_variable(header),
             }
         )
 
