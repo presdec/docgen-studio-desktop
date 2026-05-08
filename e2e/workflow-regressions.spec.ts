@@ -367,7 +367,8 @@ test('Workbook mapping dock exposes sizing, filters, usage, and required coverag
     // Wait for the workbook backend to return actual column data before checking
     // header-match and suggestion state (zero-count text renders before the
     // Python inspect call completes, so these badges alone are not a reliable guard).
-    await expect(window.getByTestId('workbook-column-letter').first()).toBeVisible({ timeout: 15000 });
+    // CI cold-start can take 20+ seconds, so use a 30s timeout here.
+    await expect(window.getByTestId('workbook-column-letter').first()).toBeVisible({ timeout: 30000 });
     await expect(window.getByText(/required mapped/)).toBeVisible();
     await expect(window.getByText(/header matches assigned/)).toBeVisible();
     await expect(window.getByRole('button', { name: 'Use suggested variable APPLICATION_CODE' }).first()).toBeVisible();
