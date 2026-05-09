@@ -273,17 +273,16 @@ test('desktop bridge extracts placeholders from txt and docx email templates', a
 test('File menu opens the remembered project and quick-saves the current setup', async () => {
   const tempDir = await mkdtemp(join(tmpdir(), 'docgen-last-project-'));
   const projectPath = join(tempDir, 'last-project.json');
-  await writeFile(projectPath, JSON.stringify(projectDocument, null, 2), 'utf8');
 
   const { app, window } = await launchApp();
 
   try {
-    await window.evaluate((filePath) => {
-      window.localStorage.setItem('greeklit.lastProjectPath', filePath);
-    }, projectPath);
-    await window.reload();
-    await window.waitForLoadState('networkidle');
-    await window.waitForFunction(() => typeof window.desktopApp?.saveProject === 'function');
+    // Use saveProject so the path lands in the main-process recent-projects list,
+    // which is what "Open Last Project" reads (not localStorage).
+    await window.evaluate(
+      async ({ doc, filePath }) => window.desktopApp.saveProject(doc, filePath),
+      { doc: projectDocument, filePath: projectPath },
+    );
 
     await clickFileMenuItem(app, 'Open Last Project');
     await expect(window.getByText(`Project file: ${projectPath}`)).toBeVisible({ timeout: 15000 });

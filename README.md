@@ -43,11 +43,11 @@ Doc Gen Studio is a free, open-source desktop app for teams that need to produce
 
 | Version | Package | Download |
 |---------|---------|----------|
-| **v0.4.0** *(latest)* | Windows installer | [DocGen-Studio-Setup-0.4.0.exe](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.0/DocGen-Studio-Setup-0.4.0.exe) |
-| **v0.4.0** *(latest)* | Linux AppImage | [docgen-studio-0.4.0-x86_64.AppImage](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.0/docgen-studio-0.4.0-x86_64.AppImage) |
-| **v0.4.0** *(latest)* | Linux deb | [docgen-studio-0.4.0-amd64.deb](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.0/docgen-studio-0.4.0-amd64.deb) |
-| **v0.4.0** *(latest)* | Linux rpm | [docgen-studio-0.4.0-x86_64.rpm](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.0/docgen-studio-0.4.0-x86_64.rpm) |
-| **v0.4.0** *(latest)* | Linux pacman | [docgen-studio-0.4.0-x64.pacman](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.0/docgen-studio-0.4.0-x64.pacman) |
+| **v0.4.1** *(latest)* | Windows installer | [DocGen-Studio-Setup-0.4.1.exe](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.1/DocGen-Studio-Setup-0.4.1.exe) |
+| **v0.4.1** *(latest)* | Linux AppImage | [docgen-studio-0.4.1-x86_64.AppImage](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.1/docgen-studio-0.4.1-x86_64.AppImage) |
+| **v0.4.1** *(latest)* | Linux deb | [docgen-studio-0.4.1-amd64.deb](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.1/docgen-studio-0.4.1-amd64.deb) |
+| **v0.4.1** *(latest)* | Linux rpm | [docgen-studio-0.4.1-x86_64.rpm](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.1/docgen-studio-0.4.1-x86_64.rpm) |
+| **v0.4.1** *(latest)* | Linux pacman | [docgen-studio-0.4.1-x64.pacman](https://github.com/presdec/docgen-studio-desktop/releases/download/v0.4.1/docgen-studio-0.4.1-x64.pacman) |
 
 All releases: [github.com/presdec/docgen-studio-desktop/releases](https://github.com/presdec/docgen-studio-desktop/releases)
 
@@ -55,15 +55,15 @@ All releases: [github.com/presdec/docgen-studio-desktop/releases](https://github
 
 **Windows (`.exe`)**
 
-1. Download `DocGen-Studio-Setup-0.4.0.exe`.
+1. Download `DocGen-Studio-Setup-0.4.1.exe`.
 2. Double-click the installer.
 3. Follow the setup wizard and launch Doc Gen Studio from the Start menu.
 
 **Linux AppImage**
 
 ```bash
-chmod +x ./docgen-studio-0.4.0-x86_64.AppImage
-./docgen-studio-0.4.0-x86_64.AppImage
+chmod +x ./docgen-studio-0.4.1-x86_64.AppImage
+./docgen-studio-0.4.1-x86_64.AppImage
 ```
 
 On Ubuntu or Debian, AppImage may require `libfuse2`:
@@ -75,7 +75,7 @@ sudo apt install libfuse2
 **Ubuntu / Debian (`.deb`)**
 
 ```bash
-sudo apt install ./docgen-studio-0.4.0-amd64.deb
+sudo apt install ./docgen-studio-0.4.1-amd64.deb
 ```
 
 If `apt` prints a warning about downloading unsandboxed as root for a local file, that is an `apt` local-file warning, not a Doc Gen Studio packaging issue.
@@ -83,19 +83,20 @@ If `apt` prints a warning about downloading unsandboxed as root for a local file
 **Fedora / RHEL (`.rpm`)**
 
 ```bash
-sudo dnf install ./docgen-studio-0.4.0-x86_64.rpm
+sudo dnf install ./docgen-studio-0.4.1-x86_64.rpm
 ```
 
 **Arch Linux (`.pacman`)**
 
 ```bash
-sudo pacman -U ./docgen-studio-0.4.0-x64.pacman
+sudo pacman -U ./docgen-studio-0.4.1-x64.pacman
 ```
 
 ### Release History
 
 | Tag | Summary |
 |-----|---------|
+| [v0.4.1](https://github.com/presdec/docgen-studio-desktop/releases/tag/v0.4.1) | Generation cancel, unsaved changes guard, skipped rows detail, keyboard shortcuts modal, email validation |
 | [v0.4.0](https://github.com/presdec/docgen-studio-desktop/releases/tag/v0.4.0) | Inline validation per component, step indicator for issues, clearer copy, Linux no-sandbox fix |
 | [v0.3.0](https://github.com/presdec/docgen-studio-desktop/releases/tag/v0.3.0) | Workbook setup modal, template inspection modal, file-field clear button, rich preview rows, sticky footer nav, sidebar step navigation, filename pattern preview restored |
 | [v0.2.15](https://github.com/presdec/docgen-studio-desktop/releases/tag/v0.2.15) | Quick save/recent projects, docked mapping panel, DOCX email templates, Greek header suggestions, review polish |
