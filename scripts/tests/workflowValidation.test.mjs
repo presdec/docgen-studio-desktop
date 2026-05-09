@@ -33,6 +33,7 @@ const copy = {
   mapRequiredFields: (wordFields, emailFields) =>
     `missing word=${wordFields.join(',')} email=${emailFields.join(',')}`,
   outputRequired: 'output folder required',
+  outputFilenamePatternRequired: 'filename pattern required',
   outputsRequired: 'outputs required',
   wordTemplateRequired: 'word template required',
   workbookRequired: 'workbook required',
@@ -43,7 +44,7 @@ const project = {
   dataStartRow: 2,
   emailTemplatePath: '',
   headerRow: 1,
-  outputFilenamePattern: '',
+  outputFilenamePattern: '{{APPLICATION_CODE}} - {{TITLE}}',
   outputFolderPath: 'out',
   rejectionColumn: '',
   rejectionValue: '',
