@@ -190,6 +190,15 @@ type Translation = {
     cc: string;
     ccDesc: string;
     invalidEmailAddress: string;
+    modifierHint: string;
+    modifierLabels: {
+      none: string;
+      upper: string;
+      lower: string;
+      title: string;
+      trim: string;
+      ordinal: string;
+    };
     subtitle: string;
     subject: string;
     subjectDesc: string;
@@ -576,6 +585,15 @@ const translations: Record<Language, Translation> = {
       cc: 'Cc',
       ccDesc: 'Optional CC addresses — leave blank if not needed.',
       invalidEmailAddress: 'This doesn\'t look like a valid email address.',
+      modifierHint: 'Tip: use the ▾ arrow on each field chip to apply a modifier — e.g. {{NAME|upper}} → JOHN, {{PERIOD|ordinal}} → 1st.',
+      modifierLabels: {
+        none: 'No modifier',
+        upper: 'UPPERCASE',
+        lower: 'lowercase',
+        title: 'Title Case',
+        trim: 'Trim spaces',
+        ordinal: 'Ordinal (1st, 2nd…) — English only',
+      },
       subtitle: 'Compose your email template. Click a workbook field chip above to insert it at your cursor — works in To, Subject, Cc, and Body.',
       subject: 'Subject',
       subjectDesc: 'Your email subject. Click here first, then insert fields from above.',
@@ -982,6 +1000,15 @@ const translations: Record<Language, Translation> = {
       title: 'Δημιουργός Προτύπου Email',
       to: 'Προς',
       toDesc: 'Κύριος παραλήπτης.',
+      modifierHint: 'Συμβουλή: χρησιμοποιήστε το ▾ βέλος σε κάθε chip πεδίου για να εφαρμόσετε τροποποιητή — π.χ. {{NAME|upper}} → ΓΙΑΝΝΗΣ.',
+      modifierLabels: {
+        none: 'Χωρίς τροποποιητή',
+        upper: 'ΚΕΦΑΛΑΙΑ',
+        lower: 'πεζά',
+        title: 'Αρχικά Κεφαλαία',
+        trim: 'Αφαίρεση κενών',
+        ordinal: 'Ordinal (1st, 2nd…) — English only',
+      },
     },
     externalEmailTemplate: {
       badge: 'Εξωτερικό αρχείο',
