@@ -26,7 +26,7 @@ type Props = {
     to: React.RefObject<HTMLInputElement | null>;
   };
   emailTemplate: EmailTemplateState;
-  insertFieldToken: (variable: string) => string;
+  insertFieldToken: (variable: string, modifier?: string) => string;
   setActiveEditor: (field: EditorField) => void;
   updateEmailField: (field: EditorField, value: string) => void;
   validationIssues: WorkflowValidationIssue[];
@@ -99,6 +99,10 @@ export function EmailTemplateEditor({
             </Button>
           ))}
         </Group>
+
+        {copy.emailBuilder.modifierHint ? (
+          <Text c="dimmed" size="xs">{copy.emailBuilder.modifierHint}</Text>
+        ) : null}
 
         <Divider />
 

@@ -30,8 +30,8 @@ export function useEmailTemplateBuilder() {
     });
   }, []);
 
-  const insertFieldToken = useCallback((variable: string) => {
-    const token = `{{${variable}}}`;
+  const insertFieldToken = useCallback((variable: string, modifier?: string) => {
+    const token = modifier ? `{{${variable}|${modifier}}}` : `{{${variable}}}`;
     if (activeEditor === 'body') {
       return token;
     }
