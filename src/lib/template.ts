@@ -4,12 +4,32 @@ export function extractTokens(value: string) {
 }
 
 export function tokenName(token: string) {
-  return token.replace(/[{}]/g, '');
+  return token.replace(/[{}]/g, '').replace(/\|.*$/, '');
+}
+
+function ordinalSuffix(value: string): string {
+  const n = parseInt(value, 10);
+  if (isNaN(n)) return value;
+  const abs = Math.abs(n);
+  const mod100 = abs % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  return `${n}${(['th', 'st', 'nd', 'rd'] as const)[abs % 10] ?? 'th'}`;
+}
+
+function applyModifier(value: string, modifier: string | undefined): string {
+  if (modifier === 'ordinal') return ordinalSuffix(value);
+  if (modifier === 'upper') return value.toUpperCase();
+  if (modifier === 'lower') return value.toLowerCase();
+  if (modifier === 'title') return value.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  if (modifier === 'trim') return value.trim();
+  return value;
 }
 
 export function renderTemplate(value: string, sampleValues: Record<string, string>) {
-  return value.replace(/{{([^}]+)}}/g, (_match, field: string) => {
-    return sampleValues[field] ?? `{{${field}}}`;
+  return value.replace(/{{([A-Z0-9_]+)(?:\|([a-z]+))?}}/g, (_match, field: string, modifier?: string) => {
+    const raw = sampleValues[field];
+    if (raw === undefined) return `{{${field}}}`;
+    return applyModifier(raw, modifier);
   });
 }
 
@@ -46,9 +66,10 @@ export function normalizeEmailBody(value: string) {
 }
 
 export function renderTemplateHtml(value: string, sampleValues: Record<string, string>) {
-  return value.replace(/{{([^}]+)}}/g, (_match, field: string) => {
-    const replacement = sampleValues[field];
-    return replacement ? escapeHtml(replacement) : `{{${field}}}`;
+  return value.replace(/{{([A-Z0-9_]+)(?:\|([a-z]+))?}}/g, (_match, field: string, modifier?: string) => {
+    const raw = sampleValues[field];
+    if (!raw) return `{{${field}}}`;
+    return escapeHtml(applyModifier(raw, modifier));
   });
 }
 
