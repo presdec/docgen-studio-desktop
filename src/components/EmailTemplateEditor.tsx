@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Badge, Button, Divider, Group, Paper, SimpleGrid, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Badge, Button, Divider, Group, Menu, Paper, SimpleGrid, Stack, Text, TextInput, Title } from '@mantine/core';
 import { RichTextEditor } from '@mantine/tiptap';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -81,23 +81,61 @@ export function EmailTemplateEditor({
         </Group>
 
         <Group gap="sm">
-          {availableVariables.map((variable) => (
-            <Button
-              key={variable}
-              className="field-chip"
-              onClick={() => {
-                const token = insertFieldToken(variable);
-                if (activeEditor === 'body' && editor) {
-                  editor.chain().focus().insertContent(token).run();
-                }
-              }}
-              radius="xl"
-              size="xs"
-              variant="light"
-            >
-              {variable}
-            </Button>
-          ))}
+          {availableVariables.map((variable) => {
+            const doInsert = (modifier?: string) => {
+              const token = insertFieldToken(variable, modifier);
+              if (activeEditor === 'body' && editor) {
+                editor.chain().focus().insertContent(token).run();
+              }
+            };
+            return (
+              <Button.Group key={variable}>
+                <Button
+                  className="field-chip"
+                  onClick={() => doInsert()}
+                  radius="xl"
+                  size="xs"
+                  style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                  variant="light"
+                >
+                  {variable}
+                </Button>
+                <Menu position="bottom-end" withinPortal>
+                  <Menu.Target>
+                    <Button
+                      aria-label={`Modifier for ${variable}`}
+                      px={6}
+                      radius="xl"
+                      size="xs"
+                      style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                      variant="light"
+                    >
+                      ▾
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item onClick={() => doInsert()}>
+                      {copy.emailBuilder.modifierLabels.none}
+                    </Menu.Item>
+                    <Menu.Divider />
+                    {(
+                      [
+                        { key: 'upper', label: copy.emailBuilder.modifierLabels.upper },
+                        { key: 'lower', label: copy.emailBuilder.modifierLabels.lower },
+                        { key: 'title', label: copy.emailBuilder.modifierLabels.title },
+                        { key: 'trim',  label: copy.emailBuilder.modifierLabels.trim  },
+                        { key: 'ordinal', label: copy.emailBuilder.modifierLabels.ordinal },
+                      ] as const
+                    ).map(({ key, label }) => (
+                      <Menu.Item key={key} onClick={() => doInsert(key)}>
+                        {label}
+                      </Menu.Item>
+                    ))}
+                  </Menu.Dropdown>
+                </Menu>
+              </Button.Group>
+            );
+          })}
         </Group>
 
         {copy.emailBuilder.modifierHint ? (
