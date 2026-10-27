@@ -10,9 +10,13 @@ from decimal import Decimal
 from email.message import EmailMessage
 from pathlib import Path
 
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 from openpyxl import load_workbook
 
-PLACEHOLDER_RE = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+PLACEHOLDER_RE = re.compile(r"\{\{([A-Z0-9_]+)(?:\|[a-z]+)?\}\}")
 PROGRESS_PREFIX = "__GREEKLIT_PROGRESS__"
 OUTLOOK_MSG_TIMEOUT_SECONDS = 30
 
@@ -58,11 +62,30 @@ def normalize_cell_value(value):
     return str(value).strip()
 
 
+def ordinal_suffix(value):
+    try:
+        n = int(value)
+    except (ValueError, TypeError):
+        return value
+    mod100 = abs(n) % 100
+    if 11 <= mod100 <= 13:
+        return f"{n}th"
+    return f"{n}{['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][abs(n) % 10]}"
+
+
 def render_template(template_text, values):
     def replacer(match):
         token = match.group(1)
+        full = match.group(0)
         replacement = values.get(token)
-        return html.escape(replacement) if replacement is not None else match.group(0)
+        if replacement is None:
+            return full
+        pipe = full.find('|')
+        if pipe != -1:
+            modifier = full[pipe + 1:-2]
+            if modifier == 'ordinal':
+                replacement = ordinal_suffix(replacement)
+        return html.escape(replacement)
 
     return PLACEHOLDER_RE.sub(replacer, template_text)
 

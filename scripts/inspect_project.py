@@ -10,7 +10,7 @@ from zipfile import ZipFile
 from openpyxl import load_workbook
 
 
-PLACEHOLDER_RE = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+PLACEHOLDER_RE = re.compile(r"\{\{([A-Z0-9_]+)(?:\|[a-z]+)?\}\}")
 XML_PART_PREFIXES = (
     "word/document.xml",
     "word/header",
@@ -359,6 +359,26 @@ def inspect_workbook(request_payload):
         rejection_value,
     )
 
+    # Find the first valid (non-empty, non-rejected) data row for sample values.
+    # iter_rows(values_only=True) returns tuples indexed from 0 = column A.
+    first_valid_row_values = None
+    _rejection_col_letter = rejection_column.upper() if rejection_column else None
+    _rejection_col_zero_idx = (get_column_index(_rejection_col_letter) - 1) if _rejection_col_letter else None
+    _consecutive_empty = 0
+    for _row in worksheet.iter_rows(min_row=data_start_row, values_only=True):
+        if not any(normalize_cell_value(cell) for cell in _row):
+            _consecutive_empty += 1
+            if _consecutive_empty >= 50:
+                break
+            continue
+        _consecutive_empty = 0
+        if _rejection_col_zero_idx is not None and rejection_value:
+            if _rejection_col_zero_idx < len(_row):
+                if normalize_cell_value(_row[_rejection_col_zero_idx]) == rejection_value:
+                    continue
+        first_valid_row_values = _row
+        break
+
     columns = []
     for cell in worksheet[header_row]:
         if cell.value is None:
@@ -366,12 +386,19 @@ def inspect_workbook(request_payload):
         header = normalize_cell_value(cell.value)
         if not header:
             continue
-        sample_value = normalize_cell_value(
-            worksheet[f"{get_column_letter(cell.column)}{data_start_row}"].value
-        )
+        col_letter = get_column_letter(cell.column)
+        col_zero_idx = cell.column - 1
+        if first_valid_row_values is not None:
+            sample_value = normalize_cell_value(
+                first_valid_row_values[col_zero_idx] if col_zero_idx < len(first_valid_row_values) else None
+            )
+        else:
+            sample_value = normalize_cell_value(
+                worksheet[f"{col_letter}{data_start_row}"].value
+            )
         columns.append(
             {
-                "columnLetter": get_column_letter(cell.column),
+                "columnLetter": col_letter,
                 "header": header,
                 "sampleValue": sample_value,
                 "suggestedVariable": normalize_header_to_variable(header),
@@ -384,9 +411,19 @@ def inspect_workbook(request_payload):
     column_values = {letter: [] for letter in column_letters}
     seen_column_values = {letter: set() for letter in column_letters}
     MAX_UNIQUE_VALUES = 200
+    MAX_CONSECUTIVE_EMPTY = 50
     rejection_col_idx = col_letter_to_idx.get(rejection_column)
+    total_rows = 0
     skipped_rows = 0
+    consecutive_empty = 0
     for row in worksheet.iter_rows(min_row=data_start_row, values_only=True):
+        if not any(normalize_cell_value(cell) for cell in row):
+            consecutive_empty += 1
+            if consecutive_empty >= MAX_CONSECUTIVE_EMPTY:
+                break
+            continue
+        consecutive_empty = 0
+        total_rows += 1
         if rejection_col_idx is not None and rejection_value:
             cell_val = normalize_cell_value(row[rejection_col_idx] if rejection_col_idx < len(row) else None)
             if cell_val == rejection_value:
@@ -431,7 +468,7 @@ def inspect_workbook(request_payload):
         "maxColumn": worksheet.max_column or 0,
         "previewRows": preview_rows,
         "sampleRows": sample_rows,
-        "totalRows": max(0, worksheet.max_row - data_start_row + 1),
+        "totalRows": total_rows,
         "skippedRows": skipped_rows,
         "worksheetName": worksheet.title,
         "worksheetNames": worksheet_names,

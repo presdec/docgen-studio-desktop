@@ -1,6 +1,7 @@
 import argparse
 import concurrent.futures
 import html
+import io
 import json
 import shutil
 import re
@@ -16,12 +17,28 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 from zipfile import ZIP_DEFLATED, ZipFile
 
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 from lxml import etree
 from openpyxl import load_workbook
 from openpyxl.utils.cell import column_index_from_string
 
 
-PLACEHOLDER_RE = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+PLACEHOLDER_RE = re.compile(r"\{\{([A-Z0-9_]+)(?:\|[a-z]+)?\}\}")
+
+
+def ordinal_suffix(value: str) -> str:
+    try:
+        n = int(value)
+    except (ValueError, TypeError):
+        return value
+    mod100 = abs(n) % 100
+    if 11 <= mod100 <= 13:
+        return f"{n}th"
+    return f"{n}{['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][abs(n) % 10]}"
+
+
 WORD_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 NSMAP = {"w": WORD_NAMESPACE}
 XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
@@ -242,16 +259,31 @@ def normalize_color_code(color_value) -> str:
     return str(color_value).upper()
 
 
+def _apply_modifier(value: str, full_match: str) -> str:
+    pipe = full_match.find('|')
+    if pipe == -1:
+        return value
+    modifier = full_match[pipe + 1:-2]
+    if modifier == 'ordinal':
+        return ordinal_suffix(value)
+    return value
+
+
 def render_plain_text(template: str, values: Dict[str, str]) -> str:
     def replacer(match: re.Match[str]) -> str:
-        return values.get(match.group(1), match.group(0))
+        replacement = values.get(match.group(1))
+        if replacement is None:
+            return match.group(0)
+        return _apply_modifier(replacement, match.group(0))
 
     return PLACEHOLDER_RE.sub(replacer, template)
 
 def render_html_template(template: str, values: Dict[str, str]) -> str:
     def replacer(match: re.Match[str]) -> str:
         replacement = values.get(match.group(1))
-        return html.escape(replacement) if replacement is not None else match.group(0)
+        if replacement is None:
+            return match.group(0)
+        return html.escape(_apply_modifier(replacement, match.group(0)))
 
     return PLACEHOLDER_RE.sub(replacer, template)
 
